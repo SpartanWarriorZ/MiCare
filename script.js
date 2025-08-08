@@ -211,10 +211,29 @@ function setupCallPanel(){
   const positionPanel = () => {
     const rect = cta.getBoundingClientRect();
     const containerRect = document.querySelector('.nav-container').getBoundingClientRect();
-    const offsetTop = rect.top + rect.height/2 - containerRect.top; // mittig vertikal zur Nav-Container
-    const offsetLeft = rect.right - containerRect.left + 12; // rechts neben CTA
-    panel.style.top = `${offsetTop}px`;
-    panel.style.left = `${offsetLeft}px`;
+    const panelRect = panel.getBoundingClientRect();
+
+    const spaceRight = document.documentElement.clientWidth - rect.right - 12;
+    const showBelow = spaceRight < panelRect.width;
+
+    if (showBelow){
+      panel.classList.remove('pos-right');
+      panel.classList.add('pos-below');
+      const offsetTop = rect.bottom - containerRect.top + 8; // unter dem Button
+      const offsetLeft = rect.left - containerRect.left;     // linksbündig zum Button
+      panel.style.top = `${offsetTop}px`;
+      panel.style.left = `${offsetLeft}px`;
+    } else {
+      panel.classList.remove('pos-below');
+      panel.classList.add('pos-right');
+      const offsetTop = rect.top + rect.height/2 - containerRect.top; // mittig vertikal
+      let offsetLeft = rect.right - containerRect.left + 12; // rechts neben CTA
+      const containerWidth = document.documentElement.clientWidth;
+      const maxLeft = containerWidth - panelRect.width - 12 - containerRect.left;
+      if (offsetLeft > maxLeft) offsetLeft = Math.max(0, maxLeft);
+      panel.style.top = `${offsetTop}px`;
+      panel.style.left = `${offsetLeft}px`;
+    }
   };
 
   const togglePanel = (e) => {

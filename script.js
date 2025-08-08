@@ -198,4 +198,43 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', setupActiveSections);
 } else {
   setupActiveSections();
+}
+
+// Desktop Call Panel Toggle
+function setupCallPanel(){
+  const cta = document.getElementById('nav-call-cta');
+  const panel = document.getElementById('nav-call-panel');
+  if (!cta || !panel) return;
+
+  const isDesktop = () => window.matchMedia('(min-width: 880px)').matches;
+
+  cta.addEventListener('click', (e) => {
+    if (isDesktop()){
+      e.preventDefault();
+      panel.classList.toggle('is-visible');
+    }
+  });
+
+  // Hide panel on outside click
+  document.addEventListener('click', (e) => {
+    if (!panel.classList.contains('is-visible')) return;
+    if (e.target === cta || cta.contains(e.target)) return;
+    if (!panel.contains(e.target)) panel.classList.remove('is-visible');
+  });
+
+  // Copy to clipboard
+  const copyBtn = document.getElementById('copy-call');
+  if (copyBtn){
+    copyBtn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(document.querySelector('.call-number').textContent.trim());
+        copyBtn.textContent = 'Kopiert!'; setTimeout(() => copyBtn.textContent = 'Kopieren', 1200);
+      } catch { copyBtn.textContent = 'Fehler'; setTimeout(() => copyBtn.textContent = 'Kopieren', 1200); }
+    });
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupCallPanel);
+} else {
+  setupCallPanel();
 } 

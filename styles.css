@@ -245,3 +245,15 @@ input:focus, textarea:focus{border-color:var(--color-primary); box-shadow:0 0 0 
 @media (max-width:880px){
   #kontakt .contact{margin-top:32px}
 } 
+
+/* Call Panel (Desktop) */
+.call-panel{position:absolute; right:4%; top:66px; background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:0 14px 40px rgba(0,0,0,.12); padding:10px 12px; opacity:0; transform:translateY(-8px); pointer-events:none; transition:opacity .25s ease, transform .25s ease}
+.call-panel .call-panel-inner{display:flex; align-items:center; gap:10px}
+.call-panel .call-number{font-weight:800}
+.btn.btn-sm{padding:8px 10px; font-size:.9rem; border-radius:10px}
+
+@media (max-width:879px){
+  .call-panel{display:none}
+}
+
+.call-panel.is-visible{opacity:1; transform:translateY(0); pointer-events:auto} 

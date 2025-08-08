@@ -35,7 +35,7 @@ img{max-width:100%; display:block}
   border-bottom:1px solid var(--border);
   box-shadow:0 6px 24px rgba(0,0,0,.06);
 }
-.nav-container{display:flex; align-items:center; justify-content:space-between; padding:10px 0}
+.nav-container{display:flex; align-items:center; justify-content:space-between; padding:10px 0; position:relative}
 .brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit}
 .brand-logo{width:40px; height:40px; object-fit:contain; filter:drop-shadow(0 0 10px rgba(224,71,71,.25))}
 .brand-text{display:flex; flex-direction:column}
@@ -247,13 +247,13 @@ input:focus, textarea:focus{border-color:var(--color-primary); box-shadow:0 0 0 
 } 
 
 /* Call Panel (Desktop) */
-.call-panel{position:absolute; right:4%; top:66px; background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:0 14px 40px rgba(0,0,0,.12); padding:10px 12px; opacity:0; transform:translateY(-8px); pointer-events:none; transition:opacity .25s ease, transform .25s ease}
+.call-panel{position:absolute; background:#fff; border:1px solid rgba(224,71,71,.35); border-radius:12px; box-shadow:0 14px 40px rgba(224,71,71,.15); padding:10px 12px; opacity:0; transform:translate(-8px,-50%); pointer-events:none; transition:opacity .25s ease, transform .25s ease}
 .call-panel .call-panel-inner{display:flex; align-items:center; gap:10px}
-.call-panel .call-number{font-weight:800}
+.call-panel .call-number{font-weight:800; white-space:nowrap}
 .btn.btn-sm{padding:8px 10px; font-size:.9rem; border-radius:10px}
 
 @media (max-width:879px){
   .call-panel{display:none}
 }
 
-.call-panel.is-visible{opacity:1; transform:translateY(0); pointer-events:auto} 
+.call-panel.is-visible{opacity:1; transform:translate(0,-50%); pointer-events:auto} 

@@ -208,12 +208,30 @@ function setupCallPanel(){
 
   const isDesktop = () => window.matchMedia('(min-width: 880px)').matches;
 
-  cta.addEventListener('click', (e) => {
+  const positionPanel = () => {
+    const rect = cta.getBoundingClientRect();
+    const containerRect = document.querySelector('.nav-container').getBoundingClientRect();
+    const offsetTop = rect.top + rect.height/2 - containerRect.top; // mittig vertikal zur Nav-Container
+    const offsetLeft = rect.right - containerRect.left + 12; // rechts neben CTA
+    panel.style.top = `${offsetTop}px`;
+    panel.style.left = `${offsetLeft}px`;
+  };
+
+  const togglePanel = (e) => {
     if (isDesktop()){
       e.preventDefault();
+      positionPanel();
       panel.classList.toggle('is-visible');
+      if (panel.classList.contains('is-visible')){
+        const num = panel.querySelector('.call-number');
+        if (num) num.tabIndex = -1, num.focus?.();
+      }
     }
-  });
+  };
+
+  cta.addEventListener('click', togglePanel);
+  window.addEventListener('resize', () => { if (panel.classList.contains('is-visible')) positionPanel(); });
+  window.addEventListener('scroll', () => { if (panel.classList.contains('is-visible')) positionPanel(); }, { passive: true });
 
   // Hide panel on outside click
   document.addEventListener('click', (e) => {

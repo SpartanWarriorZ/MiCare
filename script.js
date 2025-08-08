@@ -274,4 +274,186 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', setupCallPanel);
 } else {
   setupCallPanel();
+}
+
+// Simple i18n toggle (DE/EN)
+const I18N = {
+  de: {
+    brandTag: 'Zuhause in guten Händen',
+    nav: ['Leistungen','Über uns','Kontakt','Jetzt anrufen'],
+    heroTitle: 'Ambulante Pflege mit Herz',
+    heroLead: 'Wir unterstützen Menschen zuverlässig und empathisch im Alltag – professionell, respektvoll und nah am Menschen.',
+    heroCTAContact: 'Kontakt aufnehmen',
+    heroCTAService: 'Leistungen ansehen',
+    heroBullets: [
+      'Behandlungspflege nach ärztlicher Verordnung',
+      'Grundpflege und Betreuung zu Hause',
+      'Hauswirtschaftliche Unterstützung'
+    ],
+    secServices: 'Unsere Leistungen',
+    secServicesSub: 'Individuell, wertschätzend und auf Ihre Situation abgestimmt.',
+    cards: {
+      treat: {title:'Behandlungspflege', sub:'Medikamente, Wundversorgung, Kontrollen', back:['Medikamentengabe & Injektionen','Verbandswechsel & Wundmanagement','Blutzucker- & Blutdruckkontrollen']},
+      basic: {title:'Grundpflege', sub:'Körperpflege, Mobilisation, An-/Auskleiden', back:['Körperpflege & Hygiene','Mobilisation & Lagerung','Unterstützung beim An-/Auskleiden']},
+      care: {title:'Betreuung', sub:'Alltag, Demenz, Entlastung Angehörige', back:['Begleitung im Alltag','Demenzbetreuung & Aktivierung','Entlastungsleistungen']},
+      house: {title:'Hauswirtschaft', sub:'Einkauf, Reinigung, Wäsche', back:['Einkaufen & Botengänge','Reinigung & Aufräumen','Wäsche & Haushaltstätigkeiten']},
+      consult: {title:'Beratung', sub:'Pflegeberatung & Organisation', back:['Pflegegrade & Anträge','Leistungen der Pflegekasse','Hilfsmittel & Versorgungsplanung']}
+    },
+    aboutTitle: 'Über MiCare', aboutP: 'MiCare steht für professionelle ambulante Pflege, die den Menschen in den Mittelpunkt stellt. Unser Team arbeitet auf Augenhöhe, nimmt sich Zeit und wahrt Ihre Selbstbestimmung – in Ihrem Zuhause.',
+    aboutChecklist: ['Verlässlich erreichbar und schnell vor Ort','Qualifiziertes, herzliches Team','Transparente Planung und Dokumentation'],
+    stats: ['Erreichbarkeit','Herz & Respekt','für Sie da'],
+    contactTitle: 'Kontakt',
+    form: {
+      name: 'Ihr Name', phone: 'Telefon', email: 'E-Mail', message: 'Ihre Nachricht',
+      phName: 'Max Mustermann', phPhone: 'z. B. 0151 23456789', phEmail: 'name@example.com', phMessage: 'Wie können wir helfen?',
+      send: 'Nachricht senden', note: 'Mit dem Absenden stimmen Sie der Verarbeitung Ihrer Daten zum Zwecke der Kontaktaufnahme zu.'
+    },
+    direct: 'Direkt erreichen', addressTitle: 'Adresse', address: 'Musterstraße 1\n12345 Musterstadt', openTitle: 'Öffnungszeiten', open: 'Mo–Fr 08:00–17:00 Uhr\nNotfall: 24/7',
+    whatsapp: 'WhatsApp', footerImp: 'Impressum', footerPriv: 'Datenschutz', copy: 'Kopieren', copied: 'Kopiert!'
+  },
+  en: {
+    brandTag: 'At home in good hands',
+    nav: ['Services','About us','Contact','Call now'],
+    heroTitle: 'Outpatient care with heart',
+    heroLead: 'We support people reliably and empathetically in everyday life – professional, respectful and close to people.',
+    heroCTAContact: 'Get in touch',
+    heroCTAService: 'See services',
+    heroBullets: [
+      'Treatment care by medical prescription',
+      'Basic care and support at home',
+      'Household assistance'
+    ],
+    secServices: 'Our Services',
+    secServicesSub: 'Individual, respectful and tailored to your situation.',
+    cards: {
+      treat: {title:'Treatment care', sub:'Medication, wound care, checks', back:['Medication & injections','Dressing change & wound management','Blood sugar & pressure checks']},
+      basic: {title:'Basic care', sub:'Personal care, mobility, dressing', back:['Personal hygiene','Mobilisation & positioning','Help with dressing/undressing']},
+      care: {title:'Companionship', sub:'Daily life, dementia, family relief', back:['Everyday companionship','Dementia care & activation','Relief services']},
+      house: {title:'Housekeeping', sub:'Shopping, cleaning, laundry', back:['Groceries & errands','Cleaning & tidying','Laundry & household tasks']},
+      consult: {title:'Consulting', sub:'Care advice & organisation', back:['Care levels & applications','Benefits from nursing fund','Aids & care planning']}
+    },
+    aboutTitle: 'About MiCare', aboutP: 'MiCare stands for professional home care that puts people at the center. We work at eye level, take time and respect your autonomy – in your home.',
+    aboutChecklist: ['Reliably reachable and quick on site','Qualified, caring team','Transparent planning and documentation'],
+    stats: ['Availability','Heart & respect','here for you'],
+    contactTitle: 'Contact',
+    form: {
+      name: 'Your name', phone: 'Phone', email: 'Email', message: 'Your message',
+      phName: 'John Doe', phPhone: 'e.g. +49 151 23456789', phEmail: 'name@example.com', phMessage: 'How can we help?',
+      send: 'Send message', note: 'By submitting you agree that we process your data for contacting you.'
+    },
+    direct: 'Reach us directly', addressTitle: 'Address', address: 'Example Street 1\n12345 Sample City', openTitle: 'Opening hours', open: 'Mon–Fri 08:00–17:00\nEmergency: 24/7',
+    whatsapp: 'WhatsApp', footerImp: 'Imprint', footerPriv: 'Privacy', copy: 'Copy', copied: 'Copied!'
+  }
+};
+
+function setText(el, text){ if (el) el.textContent = text; }
+function setMultiline(el, text){ if (el) el.innerHTML = text.replace(/\n/g,'<br />'); }
+
+function applyI18n(lang){
+  const t = I18N[lang] || I18N.de;
+  // Header brand tag + nav links
+  setText(document.querySelector('.brand-tag'), t.brandTag);
+  const navLinks = document.querySelectorAll('#site-nav a');
+  if (navLinks.length >= 4){
+    setText(navLinks[0], t.nav[0]);
+    setText(navLinks[1], t.nav[1]);
+    setText(navLinks[2], t.nav[2]);
+    setText(navLinks[3], t.nav[3]);
+  }
+
+  // Hero
+  setText(document.querySelector('.hero-content h1'), t.heroTitle);
+  setText(document.querySelector('.hero-content .lead'), t.heroLead);
+  const heroBtns = document.querySelectorAll('.hero-actions .btn');
+  if (heroBtns.length >= 2){ setText(heroBtns[0], t.heroCTAContact); setText(heroBtns[1], t.heroCTAService); }
+  const bullets = document.querySelectorAll('.hero-bullets li');
+  bullets.forEach((li,i)=> setText(li, t.heroBullets[i] || li.textContent));
+
+  // Services section
+  setText(document.querySelector('#leistungen .section-title'), t.secServices);
+  setText(document.querySelector('#leistungen .section-subtitle'), t.secServicesSub);
+  const cardsFront = document.querySelectorAll('#leistungen .flip-card .flip-front');
+  const cardsBack = document.querySelectorAll('#leistungen .flip-card .flip-back');
+  const order = ['treat','basic','care','house','consult'];
+  order.forEach((key, idx) => {
+    const front = cardsFront[idx]; const back = cardsBack[idx];
+    if (front){
+      setText(front.querySelector('h3'), t.cards[key].title);
+      setText(front.querySelector('p'), t.cards[key].sub);
+    }
+    if (back){
+      setText(back.querySelector('h3'), t.cards[key].title);
+      const items = back.querySelectorAll('li');
+      items.forEach((li,i)=> setText(li, t.cards[key].back[i] || li.textContent));
+    }
+  });
+
+  // About
+  setText(document.querySelector('#ueber-uns .section-title'), t.aboutTitle);
+  setText(document.querySelector('#ueber-uns .about-text p'), t.aboutP);
+  const aboutItems = document.querySelectorAll('#ueber-uns .checklist li');
+  aboutItems.forEach((li,i)=> setText(li, t.aboutChecklist[i] || li.textContent));
+
+  // Stats
+  const statLabels = document.querySelectorAll('.stats .stat span:last-child');
+  statLabels.forEach((el,i)=> setText(el, t.stats[i] || el.textContent));
+
+  // Contact section
+  setText(document.querySelector('#kontakt .section-title'), t.contactTitle);
+  // Labels
+  const labels = document.querySelectorAll('#contact-form label');
+  const labelKeys = [t.form.name, t.form.phone, t.form.email, t.form.message];
+  labels.forEach((lab,i)=> setText(lab, labelKeys[i] || lab.textContent));
+  // Placeholders
+  const nameI = document.getElementById('name'); if (nameI) nameI.setAttribute('placeholder', t.form.phName);
+  const phoneI = document.getElementById('phone'); if (phoneI) phoneI.setAttribute('placeholder', t.form.phPhone);
+  const emailI = document.getElementById('email'); if (emailI) emailI.setAttribute('placeholder', t.form.phEmail);
+  const msgI = document.getElementById('message'); if (msgI) msgI.setAttribute('placeholder', t.form.phMessage);
+  setText(document.querySelector('#contact-form button[type="submit"]'), t.form.send);
+  setText(document.querySelector('#contact-form .btn-whatsapp'), t.whatsapp);
+  setText(document.getElementById('copy-call'), t.copy);
+  setText(document.querySelector('#contact-form .form-note'), t.form.note);
+
+  // Contact info blocks
+  const infoHeads = document.querySelectorAll('.contact-info .info-block h3');
+  if (infoHeads.length >= 3){
+    setText(infoHeads[0], t.direct);
+    setText(infoHeads[1], t.addressTitle);
+    setText(infoHeads[2], t.openTitle);
+  }
+  const infoParas = document.querySelectorAll('.contact-info .info-block p');
+  if (infoParas.length >= 3){
+    // 0: phone+mail bleibt gleich, 1: address, 2: opening
+    setMultiline(infoParas[1], t.address);
+    setMultiline(infoParas[2], t.open);
+  }
+
+  // Footer
+  const footerLinks = document.querySelectorAll('.site-footer .footer-nav a');
+  if (footerLinks.length >= 2){
+    setText(footerLinks[0], t.footerImp);
+    setText(footerLinks[1], t.footerPriv);
+  }
+}
+
+function setupLangToggle(){
+  const btn = document.getElementById('lang-toggle');
+  if (!btn) return;
+  let current = localStorage.getItem('micare_lang') || 'de';
+  const setBtn = () => btn.textContent = current === 'de' ? '🇩🇪' : '🇬🇧';
+  setBtn();
+  applyI18n(current);
+
+  btn.addEventListener('click', () => {
+    current = current === 'de' ? 'en' : 'de';
+    localStorage.setItem('micare_lang', current);
+    setBtn();
+    applyI18n(current);
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupLangToggle);
+} else {
+  setupLangToggle();
 } 

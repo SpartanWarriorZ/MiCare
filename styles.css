@@ -266,3 +266,7 @@ input:focus, textarea:focus{border-color:var(--color-primary); box-shadow:0 0 0 
 
 .call-panel.is-visible.pos-right{opacity:1; transform:translate(0,-50%); pointer-events:auto}
 .call-panel.is-visible.pos-below{opacity:1; transform:translateY(0); pointer-events:auto} 
+
+.lang-switch{margin-left:8px; border:1px solid var(--border); background:#fff; color:#111; padding:8px 10px; border-radius:10px; cursor:pointer; font-weight:700}
+.lang-switch:hover{background:#fafafa}
+@media (max-width:879px){.lang-switch{display:none}} 

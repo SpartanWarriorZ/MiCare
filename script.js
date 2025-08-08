@@ -213,27 +213,19 @@ function setupCallPanel(){
     const containerRect = document.querySelector('.nav-container').getBoundingClientRect();
     const panelRect = panel.getBoundingClientRect();
 
-    const spaceRight = document.documentElement.clientWidth - rect.right - 12;
-    const showBelow = spaceRight < panelRect.width;
+    // Immer unter dem Button anzeigen
+    panel.classList.remove('pos-right');
+    panel.classList.add('pos-below');
+    const offsetTop = rect.bottom - containerRect.top + 8; // unter dem Button
+    let offsetLeft = rect.left - containerRect.left;       // linksbündig zum Button
 
-    if (showBelow){
-      panel.classList.remove('pos-right');
-      panel.classList.add('pos-below');
-      const offsetTop = rect.bottom - containerRect.top + 8; // unter dem Button
-      const offsetLeft = rect.left - containerRect.left;     // linksbündig zum Button
-      panel.style.top = `${offsetTop}px`;
-      panel.style.left = `${offsetLeft}px`;
-    } else {
-      panel.classList.remove('pos-below');
-      panel.classList.add('pos-right');
-      const offsetTop = rect.top + rect.height/2 - containerRect.top; // mittig vertikal
-      let offsetLeft = rect.right - containerRect.left + 12; // rechts neben CTA
-      const containerWidth = document.documentElement.clientWidth;
-      const maxLeft = containerWidth - panelRect.width - 12 - containerRect.left;
-      if (offsetLeft > maxLeft) offsetLeft = Math.max(0, maxLeft);
-      panel.style.top = `${offsetTop}px`;
-      panel.style.left = `${offsetLeft}px`;
-    }
+    // Clamp innerhalb des Viewports
+    const viewportW = document.documentElement.clientWidth;
+    const maxLeft = viewportW - panelRect.width - 12 - containerRect.left;
+    if (offsetLeft > maxLeft) offsetLeft = Math.max(0, maxLeft);
+
+    panel.style.top = `${offsetTop}px`;
+    panel.style.left = `${offsetLeft}px`;
   };
 
   const togglePanel = (e) => {
@@ -438,18 +430,26 @@ function applyI18n(lang){
 
 function setupLangToggle(){
   const btn = document.getElementById('lang-toggle');
-  if (!btn) return;
+  const btnM = document.getElementById('lang-toggle-mobile');
+  if (!btn && !btnM) return;
   let current = localStorage.getItem('micare_lang') || 'de';
-  const setBtn = () => btn.textContent = current === 'de' ? '🇩🇪' : '🇬🇧';
+  const setBtn = () => {
+    const htmlDe = '<span class="flag-icon flag-de" aria-hidden="true"></span>';
+    const htmlUk = '<span class="flag-uk" aria-hidden="true"><svg viewBox="0 0 60 36" xmlns="http://www.w3.org/2000/svg"><clipPath id="u"><rect width="60" height="36" rx="3"/></clipPath><g clip-path="url(#u)"><rect width="60" height="36" fill="#012169"/><g stroke="#fff" stroke-width="6"><path d="M0,0 L60,36 M60,0 L0,36"/></g><g stroke="#C8102E" stroke-width="4"><path d="M0,-2 L62,36 M62,0 L-2,36"/></g><g fill="#fff"><rect x="26" width="8" height="36"/><rect y="14" width="60" height="8"/></g><g fill="#C8102E"><rect x="28" width="4" height="36"/><rect y="16" width="60" height="4"/></g></g></svg></span>';
+    if (btn) btn.innerHTML = current === 'de' ? htmlDe : htmlUk;
+    if (btnM) btnM.innerHTML = current === 'de' ? htmlDe : htmlUk;
+  };
   setBtn();
   applyI18n(current);
 
-  btn.addEventListener('click', () => {
+  function toggle(){
     current = current === 'de' ? 'en' : 'de';
     localStorage.setItem('micare_lang', current);
     setBtn();
     applyI18n(current);
-  });
+  }
+  if (btn) btn.addEventListener('click', toggle);
+  if (btnM) btnM.addEventListener('click', toggle);
 }
 
 if (document.readyState === 'loading') {

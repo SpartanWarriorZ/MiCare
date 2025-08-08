@@ -94,7 +94,7 @@ img{max-width:100%; display:block}
 .hero-inner{position:relative; z-index:1; display:grid; gap:22px; align-items:center; justify-items:center; text-align:center; grid-auto-flow:row; grid-template-rows:auto auto}
 .hero-media{display:flex; justify-content:center; position:relative}
 .hero-logo{width:min(88vw, 520px); filter:drop-shadow(0 0 6px rgba(224,71,71,.15)); transition:transform .35s ease}
-.hero-logo:hover{transform:translateY(-6px) scale(1.06) rotate(-1deg); animation:glowPulse 1.8s ease-in-out infinite}
+.hero-logo:hover{transform:scale(1.06); animation:glowPulse 1.8s ease-in-out infinite}
 @keyframes glowPulse{0%,100%{filter:drop-shadow(0 0 12px rgba(224,71,71,.35)) drop-shadow(0 0 28px rgba(224,71,71,.22))}50%{filter:drop-shadow(0 0 28px rgba(224,71,71,.6)) drop-shadow(0 0 48px rgba(224,71,71,.35))}}
 .hero-content{max-width:760px; padding:12px 14px; background:rgba(255,255,255,.9); border-radius:14px; border:1px solid rgba(0,0,0,.06); box-shadow:0 8px 28px rgba(0,0,0,.06)}
 .hero-content h1{font-size:clamp(1.8rem, 5vw, 3rem); line-height:1.15; margin:4px 0 10px}
@@ -199,11 +199,14 @@ input:focus, textarea:focus{border-color:var(--color-primary); box-shadow:0 0 0 
 .flip-front, .flip-back{position:absolute; inset:0; display:grid; place-items:center; text-align:center; padding:18px; border-radius:16px; border:1px solid var(--border); box-shadow:var(--shadow-md); backface-visibility:hidden}
 .flip-front{background:var(--color-surface)}
 .flip-back{background:linear-gradient(180deg, rgba(224,71,71,.06), rgba(224,71,71,.02)); transform:rotateY(180deg)}
-.flip-icon{font-size:2rem; line-height:1; margin-bottom:8px}
+.flip-icon{font-size:3.2rem; line-height:1; margin-bottom:10px}
 .flip-front h3{margin:2px 0 6px}
 .flip-front p{color:var(--color-muted); margin:0}
 .flip-back ul{list-style:disc; padding-left:18px; margin:0}
 .flip-back li{margin:6px 0}
+.flip-back h3{position:relative; padding-bottom:8px}
+.flip-back h3::after{content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px; border-radius:999px; background:linear-gradient(90deg, rgba(224,71,71,.2), var(--color-primary), rgba(224,71,71,.2)); background-size:200% 100%; transform:scaleX(0); transform-origin:left; transition:transform 1s ease}
+.flip-card.is-flipped .flip-back h3::after, .flip-card:hover .flip-back h3::after{transform:scaleX(1); animation:micare-thread 3s linear infinite}
 
 @media (min-width:720px){
   .flip-grid{grid-template-columns:repeat(2,1fr)}
@@ -267,6 +270,17 @@ input:focus, textarea:focus{border-color:var(--color-primary); box-shadow:0 0 0 
 .call-panel.is-visible.pos-right{opacity:1; transform:translate(0,-50%); pointer-events:auto}
 .call-panel.is-visible.pos-below{opacity:1; transform:translateY(0); pointer-events:auto} 
 
-.lang-switch{margin-left:8px; border:1px solid var(--border); background:#fff; color:#111; padding:8px 10px; border-radius:10px; cursor:pointer; font-weight:700}
+.lang-switch{margin-left:8px; border:1px solid var(--border); background:#fff; color:#111; padding:6px 8px; border-radius:10px; cursor:pointer; font-weight:700; display:grid; place-items:center}
 .lang-switch:hover{background:#fafafa}
-@media (max-width:879px){.lang-switch{display:none}} 
+.lang-switch .flag-icon{display:inline-block; width:28px; height:18px; border-radius:3px; box-shadow:0 0 0 1px rgba(0,0,0,.08) inset}
+.lang-switch-mobile{display:none}
+/* Germany flag */
+.flag-de{background:linear-gradient(#000 0 33.33%, #dd0000 33.33% 66.66%, #ffce00 66.66% 100%)}
+/* UK Union Jack (SVG) */
+.flag-uk{width:28px; height:18px; border-radius:3px; display:inline-block}
+.flag-uk svg{width:28px; height:18px; border-radius:3px; display:block}
+@media (max-width:879px){
+  .lang-switch{display:none}
+  .lang-switch-mobile{display:inline-grid; margin-top:6px; border:1px solid var(--border); background:#fff; color:#111; padding:6px 8px; border-radius:10px; cursor:pointer; font-weight:700; place-items:center}
+  .lang-switch-mobile .flag-icon{display:inline-block; width:28px; height:18px; border-radius:3px; box-shadow:0 0 0 1px rgba(0,0,0,.08) inset}
+} 

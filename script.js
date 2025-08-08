@@ -181,26 +181,17 @@ if (document.readyState === 'loading') {
 
 // Mark visible sections on mobile to show animated underline
 function setupActiveSections(){
-  const isMobile = window.matchMedia('(max-width: 880px)');
   const sections = document.querySelectorAll('section.section, section.hero');
   if (!sections.length) return;
 
   const ioSections = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       const section = entry.target;
-      if (isMobile.matches){
-        section.classList.toggle('is-active', entry.isIntersecting && entry.intersectionRatio > 0.5);
-      } else {
-        section.classList.remove('is-active');
-      }
+      section.classList.toggle('is-active', entry.isIntersecting && entry.intersectionRatio > 0.55);
     });
-  }, { threshold: [0.5] });
+  }, { threshold: [0.55] });
 
   sections.forEach(s => ioSections.observe(s));
-  // Reevaluate on viewport change
-  isMobile.addEventListener('change', () => {
-    sections.forEach(s => s.classList.remove('is-active'));
-  });
 }
 
 if (document.readyState === 'loading') {

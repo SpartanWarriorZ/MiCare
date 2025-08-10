@@ -172,6 +172,9 @@
               </div>
             </article>
           </div>
+          <div class="section-actions" style="margin-top:16px; text-align:center">
+            <button class="btn btn-primary btn-cta" id="open-booking" aria-label="Pflege buchen">Pflege buchen</button>
+          </div>
         </div>
       </section>
 
@@ -250,6 +253,112 @@
           </div>
         </div>
       </section>
+    
+    <!-- Buchungs-Modal -->
+    <div id="booking-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="booking-title">
+      <div class="modal-backdrop" data-close="true" aria-hidden="true"></div>
+      <div class="modal-dialog" role="document">
+        <button type="button" class="modal-close" aria-label="Schließen" title="Schließen">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+        <h3 id="booking-title" class="modal-title">Dienstleistungen buchen</h3>
+        <form id="booking-form">
+          <div class="booking-grid">
+            <div class="booking-options">
+              <details>
+                <summary>Behandlungspflege</summary>
+                <ul class="option-list">
+                  <li><label><input type="checkbox" name="services" value="Behandlungspflege – Medikamentengabe" /> Medikamentengabe</label></li>
+                  <li><label><input type="checkbox" name="services" value="Behandlungspflege – Injektionen" /> Injektionen</label></li>
+                  <li><label><input type="checkbox" name="services" value="Behandlungspflege – Verbandswechsel" /> Verbandswechsel</label></li>
+                  <li><label><input type="checkbox" name="services" value="Behandlungspflege – Wundmanagement" /> Wundmanagement</label></li>
+                  <li><label><input type="checkbox" name="services" value="Behandlungspflege – Vitalzeichenkontrollen" /> Blutzucker- & Blutdruckkontrollen</label></li>
+                </ul>
+              </details>
+              <details>
+                <summary>Grundpflege</summary>
+                <ul class="option-list">
+                  <li><label><input type="checkbox" name="services" value="Grundpflege – Körperpflege & Hygiene" /> Körperpflege & Hygiene</label></li>
+                  <li><label><input type="checkbox" name="services" value="Grundpflege – Mobilisation & Lagerung" /> Mobilisation & Lagerung</label></li>
+                  <li><label><input type="checkbox" name="services" value="Grundpflege – Hilfe beim An-/Auskleiden" /> Unterstützung beim An-/Auskleiden</label></li>
+                </ul>
+              </details>
+              <details>
+                <summary>Betreuung</summary>
+                <ul class="option-list">
+                  <li><label><input type="checkbox" name="services" value="Betreuung – Begleitung im Alltag" /> Begleitung im Alltag</label></li>
+                  <li><label><input type="checkbox" name="services" value="Betreuung – Demenzbetreuung & Aktivierung" /> Demenzbetreuung & Aktivierung</label></li>
+                  <li><label><input type="checkbox" name="services" value="Betreuung – Entlastungsleistungen" /> Entlastungsleistungen</label></li>
+                </ul>
+              </details>
+              <details>
+                <summary>Hauswirtschaft</summary>
+                <ul class="option-list">
+                  <li><label><input type="checkbox" name="services" value="Hauswirtschaft – Einkaufen & Botengänge" /> Einkaufen & Botengänge</label></li>
+                  <li><label><input type="checkbox" name="services" value="Hauswirtschaft – Reinigung & Aufräumen" /> Reinigung & Aufräumen</label></li>
+                  <li><label><input type="checkbox" name="services" value="Hauswirtschaft – Wäsche & Haushaltstätigkeiten" /> Wäsche & Haushaltstätigkeiten</label></li>
+                  <li><label><input type="checkbox" name="services" value="Hauswirtschaft – Kochen & Zubereitung" /> Kochen & Zubereitung</label></li>
+                </ul>
+              </details>
+              <details>
+                <summary>Beratung</summary>
+                <ul class="option-list">
+                  <li><label><input type="checkbox" name="services" value="Beratung – Pflegegrade & Anträge" /> Pflegegrade & Anträge</label></li>
+                  <li><label><input type="checkbox" name="services" value="Beratung – Leistungen der Pflegekasse" /> Leistungen der Pflegekasse</label></li>
+                  <li><label><input type="checkbox" name="services" value="Beratung – Hilfsmittel & Versorgungsplanung" /> Hilfsmittel & Versorgungsplanung</label></li>
+                </ul>
+              </details>
+            </div>
+
+            <aside class="booking-summary">
+              <h4>Ihre Auswahl</h4>
+              <ul id="booking-selected" class="selected-list" aria-live="polite"></ul>
+              <div class="booking-meta">
+                <div class="form-row">
+                  <label for="bk-frequency">Häufigkeit</label>
+                  <select id="bk-frequency" name="frequency">
+                    <option>Einmalig</option>
+                    <option>Täglich</option>
+                    <option>Mehrmals wöchentlich</option>
+                    <option>Wöchentlich</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label for="bk-start">Startdatum</label>
+                  <input id="bk-start" type="date" name="startDate" />
+                </div>
+                <div class="form-row">
+                  <label for="bk-times">Bevorzugte Zeiten</label>
+                  <input id="bk-times" type="text" name="times" placeholder="z. B. morgens, abends" />
+                </div>
+                <div class="form-row">
+                  <label for="bk-notes">Notizen</label>
+                  <textarea id="bk-notes" name="notes" rows="3" placeholder="Besondere Hinweise"></textarea>
+                </div>
+                <div class="form-row">
+                  <label for="bk-name">Ihr Name</label>
+                  <input id="bk-name" name="name" type="text" required placeholder="Max Mustermann" />
+                </div>
+                <div class="form-row">
+                  <label for="bk-phone">Telefon</label>
+                  <input id="bk-phone" name="phone" type="tel" required placeholder="z. B. 0151 23456789" />
+                </div>
+                <div class="form-row">
+                  <label for="bk-email">E-Mail (optional)</label>
+                  <input id="bk-email" name="email" type="email" placeholder="name@example.com" />
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="submit" id="bk-submit" class="btn btn-primary" disabled>Anfrage senden</button>
+              </div>
+            </aside>
+          </div>
+        </form>
+      </div>
+    </div>
+
     </main>
 
     <footer class="site-footer">

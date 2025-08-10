@@ -129,15 +129,34 @@ img{max-width:100%; display:block}
 .about-cta{margin-top:14px}
 
 .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
-.stat{background:var(--color-surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; text-align:center; box-shadow:var(--shadow-md)}
+.stat{background:var(--color-surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; text-align:center; box-shadow:var(--shadow-md); position:relative; overflow:visible}
 .stat .num{display:block; font-weight:900; font-size:clamp(1.1rem,4vw,1.6rem); color:#111}
+
+/* Animated border draw effect */
+/* disable previous pseudo approach */
+.stat::after{ content:none }
+
+/* SVG stroke-based border drawing */
+.stat .stat-border{position:absolute; inset:-2px; border-radius:inherit; pointer-events:none; z-index:3}
+.stat .stat-border svg{width:100%; height:100%; display:block}
+.stat .stat-border rect{stroke:var(--color-primary); stroke-width:2; fill:transparent; stroke-linecap:butt; stroke-linejoin:round; vector-effect:non-scaling-stroke; stroke-dasharray:calc(var(--path-len, 1000) + 2); stroke-dashoffset:var(--path-len, 1000); opacity:0}
+@keyframes drawStroke{from{stroke-dashoffset:var(--path-len)} to{stroke-dashoffset:-2}}
+.stat.is-drawing .stat-border rect{opacity:1; animation:drawStroke 2700ms cubic-bezier(.16,.84,.44,1) var(--draw-delay, 0ms) forwards}
+
+/* Verhindert, dass der ursprüngliche graue Rahmen den gezeichneten Rahmen überlagert */
+.stat.is-drawing{ border-color: rgba(0,0,0,0.08) }
+.stat.is-highlight{ border-color: rgba(0,0,0,0.08) }
+
+/* Glow after drawing */
+@keyframes statGlow { 0%{ box-shadow:0 8px 18px rgba(224,71,71,.12) } 50%{ box-shadow:0 12px 28px rgba(224,71,71,.22) } 100%{ box-shadow:0 8px 18px rgba(224,71,71,.12) } }
+.stat.is-highlight{ animation: statGlow 4.8s ease-in-out 1 }
 
 .contact{display:grid; gap:22px}
 .contact-form{background:var(--color-surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; box-shadow:var(--shadow-md)}
 .form-row{display:grid; gap:6px; margin-bottom:12px}
 label{font-size:.95rem}
-input, textarea{width:100%; background:#fff; color:var(--color-text); border:1px solid rgba(0,0,0,.12); border-radius:12px; padding:12px 12px; outline:none; transition:border-color .2s ease, box-shadow .2s ease}
-input:focus, textarea:focus{border-color:var(--color-primary); box-shadow:0 0 0 3px rgba(224,71,71,.18)}
+input, select, textarea{width:100%; background:#fff; color:var(--color-text); border:1px solid rgba(0,0,0,.12); border-radius:12px; padding:12px 12px; outline:none; transition:border-color .2s ease, box-shadow .2s ease}
+input:focus, select:focus, textarea:focus{border-color:var(--color-primary); box-shadow:0 0 0 3px rgba(224,71,71,.18)}
 .form-actions{display:flex; gap:10px; flex-wrap:wrap}
 .form-note{color:var(--color-muted); font-size:.85rem}
 
@@ -186,6 +205,18 @@ input:focus, textarea:focus{border-color:var(--color-primary); box-shadow:0 0 0 
 @media (min-width:426px) and (max-width:1023px){
   .hero-logo{width:min(92vw, 680px)}
 } 
+
+/* Stats modern shimmer effect */
+.stats{position:relative}
+.stat{background:var(--color-surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; text-align:center; box-shadow:var(--shadow-md); position:relative; overflow:hidden}
+.stat .num{display:block; font-weight:900; font-size:clamp(1.1rem,4vw,1.6rem); color:#111}
+.stat{--shimmer: linear-gradient(120deg, rgba(224,71,71,0), rgba(224,71,71,.3), rgba(224,71,71,0));}
+.stat::before{content:""; position:absolute; inset:-2px; border-radius:inherit; background:var(--shimmer); transform:translateX(-130%); opacity:0}
+.stat.reveal-visible::before{animation:statShimmer 1.0s cubic-bezier(.22,.61,.36,1) .05s}
+/* Re-trigger shimmer whenever card is centered or hovered */
+.stat.is-center::before{animation:statShimmer 1.0s cubic-bezier(.22,.61,.36,1)}
+.stat:hover::before, .stat:focus-visible::before{animation:statShimmer 1.0s cubic-bezier(.22,.61,.36,1)}
+@keyframes statShimmer{0%{transform:translateX(-130%); opacity:0} 15%{opacity:.55} 100%{transform:translateX(130%); opacity:0}}
 
 /* Flip Cards - Leistungen */
 .flip-grid{display:grid; grid-template-columns:1fr; gap:16px}
@@ -290,3 +321,152 @@ input:focus, textarea:focus{border-color:var(--color-primary); box-shadow:0 0 0 
   .lang-switch-mobile{display:inline-grid; margin-top:6px; border:1px solid var(--border); background:#fff; color:#111; padding:6px 8px; border-radius:10px; cursor:pointer; font-weight:700; place-items:center}
   .lang-switch-mobile .flag-icon{display:inline-block; width:28px; height:18px; border-radius:3px; box-shadow:0 0 0 1px rgba(0,0,0,.08) inset}
 } 
+
+/* Section actions (unter den Leistungen) */
+.section-actions{display:flex; justify-content:center}
+.section-actions .btn-cta{font-size:1.05rem; padding:14px 22px; border-radius:999px; box-shadow:0 14px 36px rgba(224,71,71,.32); letter-spacing:.3px}
+.section-actions .btn-cta:hover{transform:translateY(-2px)}
+.section-actions .btn-cta:active{transform:translateY(-1px)}
+@media (min-width: 880px){
+  .section-actions .btn-cta{font-size:1.12rem; padding:16px 26px}
+}
+
+/* Modal */
+.modal{position:fixed; inset:0; display:none; z-index:10000}
+.modal.is-open{display:grid}
+.modal{place-items:center}
+.modal-backdrop{position:absolute; inset:0; background:rgba(0,0,0,.45); touch-action:none; z-index:0}
+.modal-dialog{position:relative; width:min(980px, 94vw); max-height:min(88vh, 900px); background:var(--color-surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); padding:14px 14px 10px; display:flex; flex-direction:column; overflow:auto; z-index:1; -webkit-overflow-scrolling:touch; scrollbar-width:none}
+.modal-dialog::-webkit-scrollbar{display:none}
+/* Smooth scrolling for desktop as fallback */
+@media (hover: hover) and (pointer: fine){
+  .modal-dialog{scroll-behavior:smooth}
+}
+.modal-dialog:focus{outline:none}
+.modal[aria-hidden="false"]{overflow:hidden}
+.modal .booking-grid{overflow:auto}
+.modal-close{position:absolute; right:10px; top:10px; border:1px solid var(--border); background:#fff; width:34px; height:34px; border-radius:999px; cursor:pointer; font-size:20px; line-height:1; display:grid; place-items:center; color:#111; z-index:2}
+.modal-close:hover{background:#fafafa}
+.modal-close:active{transform:translateY(1px)}
+.modal-close svg{width:18px; height:18px; display:block}
+.modal-close:hover{background:#fafafa}
+.modal h3{margin:2px 0 12px}
+.modal-title{position:relative; padding-bottom:10px; text-align:left}
+.modal-title::after{content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px; border-radius:999px; background:linear-gradient(90deg, rgba(224,71,71,.2), var(--color-primary), rgba(224,71,71,.2)); background-size:200% 100%; animation:micare-thread 12s linear infinite}
+
+/* Modal open/close animations */
+/* Transition-based modal animations for reliable open/close */
+.modal-backdrop{opacity:0; transition:opacity .28s ease}
+.modal-dialog{opacity:0; transform:translateY(12px) scale(.98); transition:transform .32s cubic-bezier(.22,.61,.36,1), opacity .32s ease}
+.modal.is-open .modal-backdrop{opacity:1}
+.modal.is-open .modal-dialog{opacity:1; transform:none}
+/* closing state: keep displayed while reversing transitions */
+.modal.is-open.is-closing .modal-backdrop{opacity:0}
+.modal.is-open.is-closing .modal-dialog{opacity:0; transform:translateY(8px) scale(.985)}
+
+@media (prefers-reduced-motion: reduce){
+  .modal-backdrop, .modal-dialog{transition:none}
+}
+
+/* Booking layout */
+.booking-grid{display:grid; gap:12px; flex:1 1 auto; min-height:0; overflow:visible; padding-right:0}
+.booking-options{display:grid; gap:10px}
+.booking-summary{background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px; box-shadow:var(--shadow-md)}
+.booking-summary h4{margin:0 0 8px}
+.selected-list{min-height:16px; padding-left:18px}
+.selected-list li{margin:4px 0}
+
+/* Ensure selects are clearly readable on mobile dark auto styles */
+.booking-summary select{
+  appearance:auto; -webkit-appearance:auto; -moz-appearance:auto;
+  background:#fff; color:var(--color-text);
+}
+@media (prefers-color-scheme: dark){
+  .booking-summary select{background:#fff; color:#111}
+}
+
+/* Details/summary styling */
+details{border:1px solid var(--border); border-radius:10px; background:#fff; box-shadow:var(--shadow-md); transition:box-shadow .25s ease, transform .2s ease}
+details + details{margin-top:8px}
+details[open]{background:linear-gradient(180deg, rgba(224,71,71,.02), rgba(224,71,71,.0)), #fff; box-shadow:0 10px 26px rgba(0,0,0,.06)}
+summary{list-style:none; cursor:pointer; padding:8px 12px; font-weight:800; display:flex; align-items:center; gap:8px; -webkit-tap-highlight-color:rgba(0,0,0,0)}
+summary::before{content:"\25BA"; display:inline-block; transition:transform .25s ease, color .25s ease; font-size:.9rem; color:#c83f3f}
+details[open] > summary::before{transform:rotate(90deg)}
+summary::-webkit-details-marker{display:none}
+.option-list{margin:0; padding:0 12px 10px 14px; list-style:none}
+.option-list li{margin:6px 0; border-bottom:1px dashed rgba(0,0,0,.06)}
+.option-list li label{position:relative; display:inline-flex; align-items:center; gap:12px; padding:8px 8px}
+.option-list li:last-child{border-bottom:0}
+.option-list input{margin:0}
+.option-list input[type="checkbox"]{position:static !important; transform:none !important; width:18px; height:18px; order:2; margin-left:12px}
+
+/* Mobil: Checkbox etwas weiter rechts platzieren, damit der Text frei bleibt */
+@media (max-width: 879px){
+  .option-list li label{padding:10px 10px}
+}
+
+.modal-actions{display:flex; justify-content:flex-end; margin-top:10px}
+.booking-summary .modal-actions{position:sticky; bottom:-8px; padding-top:8px; background:linear-gradient(180deg, transparent, #fff 40%)}
+
+@media (min-width: 880px){
+  .booking-grid{grid-template-columns:1.2fr .8fr}
+  .booking-options{max-height:unset; padding-right:6px}
+  .booking-summary{position:sticky; top:10px}
+  /* kompaktere Darstellung nur Desktop */
+  .booking-options details{border-radius:10px}
+  .booking-options details:not([open]){box-shadow:var(--shadow-md)}
+  .booking-summary .form-row{margin-bottom:10px}
+  .booking-summary #bk-notes{min-height:72px}
+  /* Absende-Button sichtbar halten */
+  .booking-summary .modal-actions{position:sticky; bottom:-8px; padding-top:8px; background:linear-gradient(180deg, transparent, #fff 40%);}
+  /* Summary kompakter: zwei Spalten */
+  .booking-meta{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+  .booking-meta textarea{grid-column:1 / -1}
+
+  /* Checkbox rechts ausrichten (nur Desktop) */
+  .option-list li label{position:relative; display:block; padding:8px 36px 8px 0}
+  .option-list input[type="checkbox"]{position:absolute; right:8px; top:50%; transform:translateY(-50%); margin:0}
+}
+
+/* Scroll-Lock wenn Modal geöffnet */
+body.is-modal-open{overflow:hidden}
+
+/* Booking popovers (Date/Time pickers) */
+.booking-popover{position:fixed; z-index:10001; background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:0 18px 50px rgba(0,0,0,.12); padding:10px; width:min(320px, 92vw)}
+.booking-popover .pop-head{display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:8px}
+.booking-popover .pop-head .title{font-weight:800}
+.booking-popover .icon-btn{border:1px solid var(--border); background:#fff; border-radius:8px; width:34px; height:34px; display:grid; place-items:center; cursor:pointer; color:#111; line-height:1}
+.booking-popover .icon-btn:hover{background:#fafafa}
+.booking-popover .icon-btn svg{width:18px; height:18px; display:block}
+
+/* Calendar */
+.calendar{user-select:none}
+.cal-grid{display:grid; grid-template-columns:repeat(7, 1fr); gap:6px}
+.cal-weekday{font-size:.8rem; color:var(--color-muted); text-align:center}
+.cal-day{display:grid; place-items:center; height:36px; border-radius:10px; cursor:pointer; border:1px solid transparent}
+.cal-day:hover{background:#fafafa}
+.cal-day.is-today{border-color:rgba(224,71,71,.35)}
+.cal-day.is-out{opacity:.45}
+.cal-day.is-selected{background:linear-gradient(180deg, var(--color-primary), var(--color-primary-600)); color:#fff}
+
+/* Time list */
+/* time popover styles removed */
+/* Stats modern shimmer effect synced with section activation */
+.stats{position:relative}
+.stat{background:var(--color-surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; text-align:center; box-shadow:var(--shadow-md); position:relative; overflow:hidden; transform:translateY(8px); opacity:.96; transition:transform .6s cubic-bezier(.22,.61,.36,1), opacity .6s ease, box-shadow .25s ease, border-color .25s ease}
+.stat .num{display:block; font-weight:900; font-size:clamp(1.1rem,4vw,1.6rem); color:#111}
+.stat{--shimmer: linear-gradient(120deg, rgba(224,71,71,0), rgba(224,71,71,.38), rgba(224,71,71,0));}
+.stat::before{content:""; position:absolute; inset:-2px; border-radius:inherit; background:var(--shimmer); transform:translateX(-130%); opacity:0}
+@keyframes statShimmer{0%{transform:translateX(-130%); opacity:0} 15%{opacity:.55} 100%{transform:translateX(130%); opacity:0}}
+.section.is-active .stat{transform:none; opacity:1}
+/* Shimmer auf Sektionseintritt entfernt – wird nun über JS-Klassen .is-center getriggert */
+
+/* Hover/Focus animation */
+.stat:hover, .stat:focus-visible{transform:translateY(-4px) scale(1.03); box-shadow:var(--shadow-md), 0 18px 42px rgba(224,71,71,.28); border-color:rgba(224,71,71,.45)}
+.stat:hover .num, .stat:focus-visible .num{color:var(--color-primary-600)}
+@keyframes statShimmerStrong{0%{transform:translateX(-130%); opacity:0} 15%{opacity:.9} 100%{transform:translateX(130%); opacity:0}}
+.stat:hover::before, .stat:focus-visible::before{animation:statShimmerStrong 1.375s cubic-bezier(.22,.61,.36,1)}
+
+/* Re-trigger shimmer via JS band when centered */
+.stat.is-center::before{animation:statShimmer 1.25s cubic-bezier(.22,.61,.36,1)}
+.stat.is-center{transform:none; opacity:1}

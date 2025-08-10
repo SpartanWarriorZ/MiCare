@@ -192,6 +192,53 @@ function setupActiveSections(){
   }, { threshold: [0.55] });
 
   sections.forEach(s => ioSections.observe(s));
+
+  // Stats shimmer re-triggers whenever the card crosses a centered band (analog zu Titeln)
+  const stats = document.querySelectorAll('.stats .stat');
+  if (stats.length){
+    const LOCK_MS = 4000;       // Cooldown: ca. 4 Sekunden
+    const ANIM_MS = 1250;       // CSS-Animdauer ~1.25s
+
+    const trigger = (el) => {
+      const now = Date.now();
+      const lockUntil = Number(el.dataset.shimmerLockUntil || '0');
+      if (now < lockUntil) return; // noch gesperrt → nicht erneut starten
+
+      // Setze neuen Lock, damit während der Animation + Cooldown kein Neustart erfolgt
+      el.dataset.shimmerLockUntil = String(now + LOCK_MS);
+      el.dataset.shimmerRunning = '1';
+
+      el.classList.add('reveal-visible');
+      // toggle class to (re)start CSS animation zuverlässig
+      el.classList.remove('is-center');
+      void el.offsetWidth; // reflow
+      el.classList.add('is-center');
+
+      // Nach Animationsende Running-Flag entfernen
+      setTimeout(() => { delete el.dataset.shimmerRunning; }, ANIM_MS + 100);
+    };
+
+    const ioCenter = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const el = entry.target;
+        if (entry.isIntersecting){
+          const delayIndex = Number(el.getAttribute('data-stat-index') || '0');
+          const start = 120 * delayIndex;
+          setTimeout(() => trigger(el), start);
+        }
+        // Wenn sie das Band verlassen, entferne reveal-visible, damit beim erneuten Eintritt sicher neu animiert wird
+        if (!entry.isIntersecting){
+          // Animation nicht abbrechen, wenn gerade aktiv
+          if (el.dataset.shimmerRunning !== '1'){
+            el.classList.remove('reveal-visible');
+            el.classList.remove('is-center');
+          }
+        }
+      });
+    }, { root: null, rootMargin: "-45% 0% -45% 0%", threshold: 0 });
+
+    stats.forEach((el, idx) => { el.setAttribute('data-stat-index', String(idx)); ioCenter.observe(el); });
+  }
 }
 
 if (document.readyState === 'loading') {
@@ -294,6 +341,30 @@ const I18N = {
     aboutTitle: 'Über MiCare', aboutP: 'MiCare steht für professionelle ambulante Pflege, die den Menschen in den Mittelpunkt stellt. Unser Team arbeitet auf Augenhöhe, nimmt sich Zeit und wahrt Ihre Selbstbestimmung – in Ihrem Zuhause.',
     aboutChecklist: ['Verlässlich erreichbar und schnell vor Ort','Qualifiziertes, herzliches Team','Transparente Planung und Dokumentation'],
     stats: ['Erreichbarkeit','Herz & Respekt','für Sie da'],
+    booking: {
+      cta: 'Pflege buchen',
+      title: 'Pflege buchen',
+      selectionTitle: 'Ihre Auswahl',
+      meta: {
+        frequency: 'Häufigkeit',
+        start: 'Startdatum',
+        times: 'Bevorzugte Zeiten',
+        timesPh: 'z. B. morgens, abends',
+        notes: 'Notizen',
+        name: 'Ihr Name',
+        phone: 'Telefon',
+        email: 'E-Mail (optional)',
+        submit: 'Anfrage senden'
+      },
+      frequencyOptions: ['Einmalig','Täglich','Mehrmals wöchentlich','Wöchentlich'],
+      options: {
+        treat: ['Medikamentengabe','Injektionen','Verbandswechsel','Wundmanagement','Blutzucker- & Blutdruckkontrollen'],
+        basic: ['Körperpflege & Hygiene','Mobilisation & Lagerung','Unterstützung beim An-/Auskleiden'],
+        care: ['Begleitung im Alltag','Demenzbetreuung & Aktivierung','Entlastungsleistungen'],
+        house: ['Einkaufen & Botengänge','Reinigung & Aufräumen','Wäsche & Haushaltstätigkeiten','Kochen & Zubereitung'],
+        consult: ['Pflegegrade & Anträge','Leistungen der Pflegekasse','Hilfsmittel & Versorgungsplanung']
+      }
+    },
     contactTitle: 'Kontakt',
     form: {
       name: 'Ihr Name', phone: 'Telefon', email: 'E-Mail', message: 'Ihre Nachricht',
@@ -327,6 +398,30 @@ const I18N = {
     aboutTitle: 'About MiCare', aboutP: 'MiCare stands for professional home care that puts people at the center. We work at eye level, take time and respect your autonomy – in your home.',
     aboutChecklist: ['Reliably reachable and quick on site','Qualified, caring team','Transparent planning and documentation'],
     stats: ['Availability','Heart & respect','here for you'],
+    booking: {
+      cta: 'Book care',
+      title: 'Book care',
+      selectionTitle: 'Your selection',
+      meta: {
+        frequency: 'Frequency',
+        start: 'Start date',
+        times: 'Preferred times',
+        timesPh: 'e.g. mornings, evenings',
+        notes: 'Notes',
+        name: 'Your name',
+        phone: 'Phone',
+        email: 'Email (optional)',
+        submit: 'Send request'
+      },
+      frequencyOptions: ['One-time','Daily','Several times a week','Weekly'],
+      options: {
+        treat: ['Medication administration','Injections','Dressing change','Wound management','Blood sugar & pressure checks'],
+        basic: ['Personal hygiene','Mobilisation & positioning','Help with dressing/undressing'],
+        care: ['Everyday companionship','Dementia care & activation','Relief services'],
+        house: ['Groceries & errands','Cleaning & tidying','Laundry & household tasks','Cooking & preparation'],
+        consult: ['Care levels & applications','Benefits from nursing fund','Aids & care planning']
+      }
+    },
     contactTitle: 'Contact',
     form: {
       name: 'Your name', phone: 'Phone', email: 'Email', message: 'Your message',
@@ -389,6 +484,61 @@ function applyI18n(lang){
   // Stats
   const statLabels = document.querySelectorAll('.stats .stat span:last-child');
   statLabels.forEach((el,i)=> setText(el, t.stats[i] || el.textContent));
+
+  // Booking CTA label
+  const bookingCta = document.getElementById('open-booking');
+  if (bookingCta) setText(bookingCta, (t.booking && t.booking.cta) || bookingCta.textContent);
+
+  // Booking modal texts
+  const bookingTitle = document.getElementById('booking-title');
+  if (bookingTitle && t.booking) setText(bookingTitle, t.booking.title);
+
+  if (t.booking){
+    // Selection title
+    const selTitle = document.querySelector('.booking-summary h4');
+    if (selTitle) setText(selTitle, t.booking.selectionTitle);
+
+    // Frequency select options
+    const freq = document.getElementById('bk-frequency');
+    if (freq && t.booking.frequencyOptions){
+      const values = t.booking.frequencyOptions;
+      freq.innerHTML = values.map(v => `<option>${v}</option>`).join('');
+    }
+    // Labels & placeholders
+    setText(document.querySelector('label[for="bk-frequency"]'), t.booking.meta.frequency);
+    setText(document.querySelector('label[for="bk-start"]'), t.booking.meta.start);
+    setText(document.querySelector('label[for="bk-times"]'), t.booking.meta.times);
+    setText(document.querySelector('label[for="bk-notes"]'), t.booking.meta.notes);
+    setText(document.querySelector('label[for="bk-name"]'), t.booking.meta.name);
+    setText(document.querySelector('label[for="bk-phone"]'), t.booking.meta.phone);
+    setText(document.querySelector('label[for="bk-email"]'), t.booking.meta.email);
+    const timesI = document.getElementById('bk-times'); if (timesI) timesI.setAttribute('placeholder', t.booking.meta.timesPh);
+    const submitI = document.getElementById('bk-submit'); if (submitI) setText(submitI, t.booking.meta.submit);
+
+    // Options within details
+    const detailEls = document.querySelectorAll('.booking-options details');
+    const groups = ['treat','basic','care','house','consult'];
+    detailEls.forEach((d, idx) => {
+      // Summary (category title)
+      const sum = d.querySelector('summary');
+      const cardTitle = t.cards && t.cards[groups[idx]] ? t.cards[groups[idx]].title : null;
+      if (sum && cardTitle) setText(sum, cardTitle);
+
+      // Options (checkbox labels)
+      const labels = d.querySelectorAll('.option-list li label');
+      const translated = (t.booking.options[groups[idx]] || []);
+      labels.forEach((lab, i) => {
+        if (!translated[i]) return;
+        const input = lab.querySelector('input');
+        if (!input) return;
+        // Rebuild label content: keep input, set text after it
+        input.remove();
+        lab.textContent = translated[i];
+        lab.prepend(document.createTextNode(' '));
+        lab.prepend(input);
+      });
+    });
+  }
 
   // Contact section
   setText(document.querySelector('#kontakt .section-title'), t.contactTitle);
@@ -457,3 +607,380 @@ if (document.readyState === 'loading') {
 } else {
   setupLangToggle();
 } 
+
+// Booking modal logic
+function setupBooking(){
+  const openBtn = document.getElementById('open-booking');
+  const modal = document.getElementById('booking-modal');
+  if (!openBtn || !modal) return;
+
+  const dialog = modal.querySelector('.modal-dialog');
+  const backdrop = modal.querySelector('.modal-backdrop');
+  const closeBtn = modal.querySelector('.modal-close');
+  const form = document.getElementById('booking-form');
+  const selectedList = document.getElementById('booking-selected');
+  const submitBtn = document.getElementById('bk-submit');
+  // Desktop: kompletter Dialog ist die Scrollfläche
+  const scrollArea = dialog;
+  let lastScrollY = 0;
+
+  const toggle = (show) => {
+    // add closing class for reverse animations
+    if (show){
+      modal.classList.remove('is-closing');
+      modal.classList.add('is-open');
+    } else {
+      // add closing state while still open so transitions can play
+      modal.classList.add('is-closing');
+      modal.classList.add('is-open');
+      // after transitions, remove open state
+      setTimeout(() => { modal.classList.remove('is-open'); modal.classList.remove('is-closing'); }, 320);
+    }
+    modal.setAttribute('aria-hidden', String(!show));
+    document.body.classList.toggle('is-modal-open', show);
+    if (show){
+      // Scroll lock (Desktop) + Lenis pausieren
+      try { lastScrollY = window.scrollY; } catch {}
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${lastScrollY}px`;
+      document.body.style.width = '100%';
+      if (typeof lenis?.stop === 'function') lenis.stop();
+      // focus first focusable element
+      const first = dialog.querySelector('input, select, textarea, button');
+      first && first.focus();
+      updateSelected();
+    }
+    else {
+      // Scroll unlock + Lenis fortsetzen
+      document.body.classList.remove('is-modal-open');
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      if (typeof lenis?.start === 'function') lenis.start();
+      if (!isNaN(lastScrollY)) window.scrollTo(0, lastScrollY);
+      // Any open popovers (calendar/time) must be closed when modal closes
+      try { if (typeof closePopover === 'function') closePopover(); } catch {}
+    }
+  };
+
+  const updateSelected = () => {
+    const checked = [...form.querySelectorAll('input[name="services"]:checked')]
+      .map(i => i.value);
+    selectedList.innerHTML = checked.map(v => `<li>${v}</li>`).join('');
+    submitBtn.disabled = checked.length === 0;
+  };
+
+  openBtn.addEventListener('click', () => toggle(true));
+  backdrop.addEventListener('click', () => toggle(false));
+  if (closeBtn){
+    closeBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggle(false); });
+    // Fallback: key support on close button
+    closeBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(false); } });
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('is-open')) toggle(false); });
+
+  // Prevent background scroll on touch by capturing wheel/touchmove and allowing only inside scroll area
+  const preventBgScroll = (e) => {
+    if (!modal.classList.contains('is-open')) return;
+    if (!scrollArea) { e.preventDefault(); return; }
+    const target = e.target;
+    // find if event happened inside scroll area
+    if (scrollArea.contains(target)) { e.stopPropagation(); return; } // allow default inside content
+    e.preventDefault();
+  };
+  // Desktop: Smooth Wheel-Scrolling für den Dialog
+  const isDesktopPointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+  let wheelTarget = 0;
+  let wheelAnimating = false;
+  const animateWheel = () => {
+    if (!wheelAnimating) return;
+    const current = scrollArea.scrollTop;
+    const diff = wheelTarget - current;
+    if (Math.abs(diff) < 0.6) {
+      scrollArea.scrollTop = wheelTarget;
+      wheelAnimating = false;
+      return;
+    }
+    // sanfte Annäherung
+    scrollArea.scrollTop = current + diff * 0.18;
+    requestAnimationFrame(animateWheel);
+  };
+  const onWheel = (e) => {
+    if (!modal.classList.contains('is-open')) return;
+    if (!isDesktopPointer.matches) return; // Mobile unberührt lassen
+    e.preventDefault();
+    const maxTop = scrollArea.scrollHeight - scrollArea.clientHeight;
+    // Ziel erhöhen/verringern, Trackpad/Mousewheel kompatibel
+    wheelTarget = Math.max(0, Math.min(maxTop, wheelTarget + e.deltaY));
+    if (!wheelAnimating) {
+      wheelAnimating = true;
+      requestAnimationFrame(animateWheel);
+    }
+  };
+  modal.addEventListener('wheel', onWheel, { passive: false });
+  dialog.addEventListener('wheel', onWheel, { passive: false });
+  if (scrollArea) scrollArea.addEventListener('wheel', onWheel, { passive: false });
+  // Keyboard scrolling for accessibility
+  if (scrollArea) {
+    scrollArea.setAttribute('tabindex', '-1');
+    const keyScroll = (e) => {
+      if (!modal.classList.contains('is-open')) return;
+      const line = 50; // px per arrow key
+      if (['ArrowDown','ArrowUp','PageDown','PageUp','Home','End'].includes(e.key)){
+        e.preventDefault();
+      }
+      switch(e.key){
+        case 'ArrowDown': wheelTarget = Math.min(scrollArea.scrollHeight - scrollArea.clientHeight, (wheelTarget || scrollArea.scrollTop) + line); if (!wheelAnimating) { wheelAnimating = true; requestAnimationFrame(animateWheel); } break;
+        case 'ArrowUp': wheelTarget = Math.max(0, (wheelTarget || scrollArea.scrollTop) - line); if (!wheelAnimating) { wheelAnimating = true; requestAnimationFrame(animateWheel); } break;
+        case 'PageDown': wheelTarget = Math.min(scrollArea.scrollHeight - scrollArea.clientHeight, (wheelTarget || scrollArea.scrollTop) + scrollArea.clientHeight * 0.9); if (!wheelAnimating) { wheelAnimating = true; requestAnimationFrame(animateWheel); } break;
+        case 'PageUp': wheelTarget = Math.max(0, (wheelTarget || scrollArea.scrollTop) - scrollArea.clientHeight * 0.9); if (!wheelAnimating) { wheelAnimating = true; requestAnimationFrame(animateWheel); } break;
+        case 'Home': wheelTarget = 0; if (!wheelAnimating) { wheelAnimating = true; requestAnimationFrame(animateWheel); } break;
+        case 'End': wheelTarget = scrollArea.scrollHeight; if (!wheelAnimating) { wheelAnimating = true; requestAnimationFrame(animateWheel); } break;
+      }
+    };
+    dialog.addEventListener('keydown', keyScroll);
+  }
+  // Mobile touch
+  modal.addEventListener('touchmove', preventBgScroll, { passive: false });
+
+  form.addEventListener('change', (e) => {
+    if (e.target.matches('input[name="services"]')) updateSelected();
+  });
+
+  form.addEventListener('submit', (evt) => {
+    evt.preventDefault();
+    const data = new FormData(form);
+    const services = data.getAll('services');
+    const lines = [];
+    lines.push('Ausgewählte Dienstleistungen:');
+    services.forEach(s => lines.push(`- ${s}`));
+    lines.push('');
+    const freq = data.get('frequency') || '';
+    const start = data.get('startDate') || '';
+    const times = data.get('times') || '';
+    const notes = data.get('notes') || '';
+    lines.push(`Häufigkeit: ${freq}`);
+    if (start) lines.push(`Startdatum: ${start}`);
+    if (times) lines.push(`Bevorzugte Zeiten: ${times}`);
+    if (notes) { lines.push(''); lines.push('Notizen:'); lines.push(String(notes)); }
+    lines.push('');
+    const name = String(data.get('name') || '').trim();
+    const phone = String(data.get('phone') || '').trim();
+    const email = String(data.get('email') || '').trim();
+    if (!name || !phone){
+      alert('Bitte füllen Sie Name und Telefon aus.');
+      return;
+    }
+    lines.push(`Name: ${name}`);
+    lines.push(`Telefon: ${phone}`);
+    if (email) lines.push(`E-Mail: ${email}`);
+
+    const subject = encodeURIComponent('Buchungsanfrage – MiCare');
+    const body = encodeURIComponent(lines.join('\n'));
+    const mailto = `mailto:kontakt@micare.de?subject=${subject}&body=${body}`;
+    window.location.href = mailto;
+
+    form.reset();
+    updateSelected();
+    toggle(false);
+  });
+
+  // Smooth accordion animation for details groups (always animated open/close)
+  const groups = modal.querySelectorAll('.booking-options details');
+  groups.forEach(details => {
+    const summary = details.querySelector('summary');
+    const content = details.querySelector('.option-list');
+    if (!summary || !content) return;
+
+    let isAnimating = false;
+    const durationOpenMs = 260;
+    const durationCloseMs = 220;
+    const timing = 'cubic-bezier(.22,.61,.36,1)';
+
+    const setTransition = (ms) => { content.style.transition = `height ${ms}ms ${timing}`; };
+    const clearTransition = () => { content.style.transition = ''; };
+
+    // Initial state without jumps
+    if (details.open) {
+      content.style.height = 'auto';
+      content.style.overflow = '';
+    } else {
+      content.style.height = '0px';
+      content.style.overflow = 'hidden';
+    }
+
+    const openAnimated = () => {
+      if (isAnimating) return; isAnimating = true;
+      details.open = true;
+      content.style.overflow = 'hidden';
+      content.style.height = '0px';
+      // reflow
+      void content.offsetHeight;
+      setTransition(durationOpenMs);
+      content.style.height = `${content.scrollHeight}px`;
+      content.addEventListener('transitionend', () => {
+        clearTransition();
+        content.style.height = 'auto';
+        content.style.overflow = '';
+        isAnimating = false;
+      }, { once: true });
+    };
+
+    const closeAnimated = () => {
+      if (isAnimating) return; isAnimating = true;
+      const start = content.scrollHeight;
+      content.style.overflow = 'hidden';
+      content.style.height = `${start}px`;
+      // reflow
+      void content.offsetHeight;
+      setTransition(durationCloseMs);
+      content.style.height = '0px';
+      content.addEventListener('transitionend', () => {
+        clearTransition();
+        details.open = false;
+        isAnimating = false;
+      }, { once: true });
+    };
+
+    // Intercept clicks to always animate
+    // Desktop: nutze Click
+    summary.addEventListener('click', (e) => {
+      const isTouch = window.matchMedia('(hover: none)').matches;
+      if (isTouch) return; // Mobile handled via pointerup
+      e.preventDefault();
+      if (details.open) closeAnimated(); else openAnimated();
+    });
+
+    // Keyboard accessibility
+    summary.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (details.open) closeAnimated(); else openAnimated();
+      }
+    });
+
+    // Touch support: pointerup auf Mobile, um Doppeltrigger zu verhindern
+    summary.addEventListener('pointerup', (e) => {
+      const isTouch = window.matchMedia('(hover: none)').matches;
+      if (!isTouch) return;
+      e.preventDefault();
+      if (details.open) closeAnimated(); else openAnimated();
+    }, { passive: false });
+  });
+
+  // --- Date & Time pickers (lightweight popovers) ---
+  const dateInput = document.getElementById('bk-start');
+  const timeInput = document.getElementById('bk-times');
+  let popover = null;
+  let popAnchor = null;
+
+  function closePopover(){
+    if (popover) { popover.remove(); popover = null; popAnchor = null; }
+  }
+
+  function positionPopover(anchor, el){
+    const r = anchor.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    const vh = document.documentElement.clientHeight;
+    let top = r.bottom + 8;
+    let left = r.left;
+    // Horizontal clamp
+    const maxLeft = vw - el.offsetWidth - 12;
+    if (left > maxLeft) left = Math.max(8, maxLeft);
+    if (left < 8) left = 8;
+    // If below viewport, flip above
+    if (top + el.offsetHeight > vh - 8) top = Math.max(8, r.top - 8 - el.offsetHeight);
+    el.style.position = 'fixed';
+    el.style.top = `${Math.round(top)}px`;
+    el.style.left = `${Math.round(left)}px`;
+  }
+
+  function buildCalendar(year, month){
+    const wrapper = document.createElement('div');
+    wrapper.className = 'booking-popover';
+    const head = document.createElement('div'); head.className = 'pop-head';
+    const title = document.createElement('div'); title.className = 'title';
+    const prev = document.createElement('button'); prev.className = 'icon-btn'; prev.type = 'button';
+    prev.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const next = document.createElement('button'); next.className = 'icon-btn'; next.type = 'button';
+    next.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    head.append(prev, title, next);
+    const cal = document.createElement('div'); cal.className = 'calendar';
+    const grid = document.createElement('div'); grid.className = 'cal-grid';
+    const lang = (localStorage.getItem('micare_lang') || 'de');
+    const locale = lang === 'en' ? 'en-US' : 'de-DE';
+    const weekdays = lang === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Mo','Di','Mi','Do','Fr','Sa','So'];
+    weekdays.forEach(w => { const el = document.createElement('div'); el.className = 'cal-weekday'; el.textContent = w; grid.appendChild(el); });
+
+    function render(y, m){
+      grid.querySelectorAll('.cal-day').forEach(n => n.remove());
+      const first = new Date(y, m, 1);
+      const startIdx = (first.getDay() + 6) % 7; // Montag=0
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+      const monthName = new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(y, m, 1));
+      const cap = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+      title.textContent = `${cap} ${y}`;
+      const today = new Date();
+      // leading blanks from previous month
+      for (let i=0;i<startIdx;i++){ const d = document.createElement('div'); d.className='cal-day is-out'; d.textContent=''; grid.appendChild(d); }
+      for (let d=1; d<=daysInMonth; d++){
+        const el = document.createElement('div'); el.className='cal-day'; el.textContent = String(d);
+        const isToday = (y===today.getFullYear() && m===today.getMonth() && d===today.getDate());
+        if (isToday) el.classList.add('is-today');
+        el.addEventListener('click', () => {
+          const val = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+          dateInput.value = val;
+          closePopover();
+        });
+        grid.appendChild(el);
+      }
+    }
+
+    prev.addEventListener('click', () => { month--; if (month<0){ month=11; year--; } render(year, month); });
+    next.addEventListener('click', () => { month++; if (month>11){ month=0; year++; } render(year, month); });
+
+    render(year, month);
+    cal.appendChild(grid);
+    wrapper.append(head, cal);
+    return wrapper;
+  }
+
+  // Time popover removed per request – users can type freely
+
+  if (dateInput){
+    const isTouch = window.matchMedia('(hover: none)').matches;
+    const openDate = () => {
+      closePopover();
+      popover = buildCalendar(new Date().getFullYear(), new Date().getMonth());
+      document.body.appendChild(popover);
+      popAnchor = dateInput; positionPopover(dateInput, popover);
+    };
+    if (!isTouch){
+      dateInput.addEventListener('focus', openDate);
+      dateInput.addEventListener('click', openDate);
+      // Desktop: nativen Datepicker unterdrücken, damit unser Popover sichtbar ist
+      dateInput.addEventListener('mousedown', (e) => {
+        const isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        if (isDesktop){ e.preventDefault(); openDate(); dateInput.blur(); }
+      });
+    }
+  }
+  // No time popover bindings; keep input free-text
+
+  // Close popover on outside click or escape
+  document.addEventListener('click', (e) => {
+    if (!popover) return;
+    if (e.target === popover || popover.contains(e.target)) return;
+    if (e.target === dateInput || e.target === timeInput) return;
+    closePopover();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key==='Escape') closePopover(); });
+  window.addEventListener('resize', () => { if (popover && popAnchor) positionPopover(popAnchor, popover); });
+  window.addEventListener('scroll', () => { if (popover && popAnchor) positionPopover(popAnchor, popover); }, { passive:true });
+}
+
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', setupBooking);
+} else {
+  setupBooking();
+}

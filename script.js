@@ -457,7 +457,7 @@ function applyI18n(lang){
   bullets.forEach((li,i)=> setText(li, t.heroBullets[i] || li.textContent));
 
   // Services section
-  setText(document.querySelector('#leistungen .section-title'), t.secServices);
+  setText(document.querySelector('#leistungen .section-title .title-text'), t.secServices);
   setText(document.querySelector('#leistungen .section-subtitle'), t.secServicesSub);
   const cardsFront = document.querySelectorAll('#leistungen .flip-card .flip-front');
   const cardsBack = document.querySelectorAll('#leistungen .flip-card .flip-back');
@@ -514,6 +514,21 @@ function applyI18n(lang){
     setText(document.querySelector('label[for="bk-email"]'), t.booking.meta.email);
     const timesI = document.getElementById('bk-times'); if (timesI) timesI.setAttribute('placeholder', t.booking.meta.timesPh);
     const submitI = document.getElementById('bk-submit'); if (submitI) setText(submitI, t.booking.meta.submit);
+
+    // Send channel labels (preserve input elements)
+    const sendLabel = document.getElementById('bk-sendvia-label'); if (sendLabel) setText(sendLabel, lang === 'en' ? 'Send via' : 'Senden über');
+    const radios = document.querySelectorAll('.send-channel label');
+    if (radios.length >= 2){
+      const texts = [lang === 'en' ? 'Email' : 'E-Mail', 'WhatsApp'];
+      radios.forEach((lab, i) => {
+        const inp = lab.querySelector('input');
+        if (!inp) return;
+        // rebuild label: keep input, add text node
+        lab.innerHTML = '';
+        lab.appendChild(inp);
+        lab.append(' ' + texts[i]);
+      });
+    }
 
     // Options within details
     const detailEls = document.querySelectorAll('.booking-options details');
@@ -777,8 +792,19 @@ function setupBooking(){
 
     const subject = encodeURIComponent('Buchungsanfrage – MiCare');
     const body = encodeURIComponent(lines.join('\n'));
-    const mailto = `mailto:kontakt@micare.de?subject=${subject}&body=${body}`;
-    window.location.href = mailto;
+
+    const sendVia = data.get('sendChannel') || 'email';
+    if (sendVia === 'whatsapp'){
+      const waText = encodeURIComponent(lines.join('\n'));
+      const phone = '491234567890'; // TODO: echte Nummer hinterlegen
+      const isMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+      const waBase = isMobile ? 'https://wa.me/' : 'https://web.whatsapp.com/send?phone=';
+      const waUrl = isMobile ? `${waBase}${phone}?text=${waText}` : `${waBase}${phone}&text=${waText}`;
+      window.open(waUrl, '_blank', 'noopener');
+    } else {
+      const mailto = `mailto:kontakt@micare.de?subject=${subject}&body=${body}`;
+      window.location.href = mailto;
+    }
 
     form.reset();
     updateSelected();

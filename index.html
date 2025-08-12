@@ -79,7 +79,15 @@
 
       <section id="leistungen" class="section">
         <div class="container">
-          <h2 class="section-title reveal">Unsere Leistungen</h2>
+          <h2 class="section-title reveal"><span class="title-text">Unsere Leistungen</span>
+            <span class="ekg-underline" aria-hidden="true">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="ekg-base" pathLength="1" d="M0 50 H85.8" />
+                <path class="ekg-spike" pathLength="1" d="M85.2 50 H85.6 L86.0 47 L86.4 50 H86.8 L87.4 5 L88.3 82 L89.4 50 L90.2 46 L91.0 54 L91.8 40 L92.6 50 H100" />
+                <path class="ekg-tail" pathLength="1" d="M92.7 50 H100" />
+              </svg>
+            </span>
+          </h2>
           <p class="section-subtitle reveal">Individuell, wertschätzend und auf Ihre Situation abgestimmt.</p>
           <div class="flip-grid">
             <article class="flip-card reveal" tabindex="0" aria-label="Behandlungspflege">
@@ -348,6 +356,13 @@
                 <div class="form-row">
                   <label for="bk-email">E-Mail (optional)</label>
                   <input id="bk-email" name="email" type="email" placeholder="name@example.com" />
+                </div>
+                <div class="form-row sendvia-row">
+                  <label id="bk-sendvia-label">Senden über</label>
+                  <div class="send-channel" role="radiogroup" aria-labelledby="bk-sendvia-label">
+                    <label><input type="radio" id="send-email" name="sendChannel" value="email" checked /> E-Mail</label>
+                    <label><input type="radio" id="send-whatsapp" name="sendChannel" value="whatsapp" /> WhatsApp</label>
+                  </div>
                 </div>
               </div>
               <div class="modal-actions">

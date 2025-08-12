@@ -281,6 +281,58 @@ input:focus, select:focus, textarea:focus{border-color:var(--color-primary); box
   .section.is-active .section-title::after{transform:scaleX(1); opacity:1; animation:micare-thread 12s linear infinite}
 }
 
+/* EKG-Unterstreichung als dünne, von links nach rechts gezeichnete Linie */
+#leistungen .section-title{position:relative; padding-bottom:6px}
+#leistungen .section-title .ekg-underline{position:absolute; left:0; right:0; bottom:-2px; height:0; width:100%; display:block; pointer-events:none; overflow:visible}
+#leistungen .section-title .ekg-underline svg{position:absolute; left:0; bottom:0; width:100%; height:100px; display:block; transform:translateY(50%)}
+#leistungen .section-title .ekg-underline .ekg-base,
+#leistungen .section-title .ekg-underline .ekg-spike,
+#leistungen .section-title .ekg-underline .ekg-tail{
+  fill:none; stroke:var(--color-primary); stroke-linecap:butt; stroke-linejoin:miter;
+  stroke-dasharray:1; stroke-dashoffset:1; opacity:0;
+}
+#leistungen .section-title .ekg-underline .ekg-base{ stroke-width:1.6 }
+#leistungen .section-title .ekg-underline .ekg-spike{ stroke-width:.2 }
+#leistungen .section-title .ekg-underline .ekg-tail{ stroke-width:1.6 }
+
+#leistungen.section.is-active .section-title .ekg-underline .ekg-base{
+  opacity:1; animation:ekgDrawBase .75s linear forwards;
+}
+#leistungen.section.is-active .section-title .ekg-underline .ekg-spike{
+  opacity:1; animation:ekgDrawSpike .5s linear .75s forwards;
+}
+#leistungen.section.is-active .section-title .ekg-underline .ekg-tail{
+  opacity:1; animation:ekgDrawTail .35s linear 1.2s forwards;
+}
+@keyframes ekgDrawBase{from{stroke-dashoffset:1} to{stroke-dashoffset:0}}
+@keyframes ekgDrawSpike{from{stroke-dashoffset:1} to{stroke-dashoffset:0}}
+@keyframes ekgDrawTail{from{stroke-dashoffset:1} to{stroke-dashoffset:0}}
+@media (max-width:480px){
+  #leistungen .section-title{padding-bottom:6px}
+}
+
+/* Tablet und kleiner (<=768px): EKG-SVG anzeigen und mobil optimieren */
+@media (max-width: 768px){
+  /* EKG-SVG sichtbar machen, Standard-Unterstrich nur für diese Sektion ausblenden */
+  #leistungen .section-title .ekg-underline{display:block !important}
+  #leistungen .section-title::after{content:none !important}
+  /* Titel linksbündig und volle Breite, damit die Linie vom Titelbeginn bis rechts reicht */
+  #leistungen .section-title{display:block; text-align:left; padding-bottom:6px}
+  /* kompaktere SVG-Höhe auf Mobile/Tablets */
+  #leistungen .section-title .ekg-underline svg{height:52px; transform:translateY(50%)}
+  /* mobil: Striche deutlich dicker darstellen */
+  #leistungen .section-title .ekg-underline .ekg-base,
+  #leistungen .section-title .ekg-underline .ekg-tail{ stroke-width:5 }
+  #leistungen .section-title .ekg-underline .ekg-spike{ stroke-width:0.7 }
+  /* Abstand zwischen Linie und Untertitel erhöhen */
+  #leistungen .section-subtitle{margin-top:14px}
+}
+
+/* Desktop und größer als Tablet (>768px): Standard-Unterstrich deaktivieren, nur SVG-EKG verwenden */
+@media (min-width:769px){
+  #leistungen .section-title::after{content:none !important}
+}
+
 /* Mehr Abstand unter dem Kontakt-Titel */
 #kontakt .contact{margin-top:24px}
 @media (max-width:880px){
@@ -384,6 +436,11 @@ input:focus, select:focus, textarea:focus{border-color:var(--color-primary); box
 @media (prefers-color-scheme: dark){
   .booking-summary select{background:#fff; color:#111}
 }
+
+.send-channel{display:flex; gap:12px; flex-wrap:wrap}
+.send-channel label{display:inline-flex; align-items:center; gap:8px; cursor:pointer}
+.send-channel input[type="radio"]{accent-color: var(--color-primary);}
+.sendvia-row label{font-weight:800}
 
 /* Details/summary styling */
 details{border:1px solid var(--border); border-radius:10px; background:#fff; box-shadow:var(--shadow-md); transition:box-shadow .25s ease, transform .2s ease}
